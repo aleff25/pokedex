@@ -1,0 +1,26 @@
+version: '3.7'
+services:
+  db:
+    image: mongo:3.4
+    ports:
+      - 27017:27017
+  mongo-seed:
+    image: stefanwalther/mongo-seed
+    container_name: mongo-seed
+    environment:
+      - MONGODB_HOST=db
+      - MONGODB_PORT=27017
+    volumes:
+      - ./config/seed:/data
+    depends_on:
+      - db
+    command: [
+      "mongoimport --host db --port 27017 --db pokeapi --mode upsert --type json --file /data/pokemons.json --jsonArray"
+    ]
+  backend:
+    image: node:11.15.0
+    volumes:
+      - .:/backend
+    ports:
+      - 3000:3000
+    command: bash -c "cd /backend && npm i && npm start"
